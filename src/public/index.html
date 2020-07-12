@@ -30,6 +30,12 @@
         <li class="nav-item" ng-class="{active: menuctrl.PathIs('/Entities/')}" ng-show="menuctrl.hasrole('users')">
           <a class="nav-link" href="#/Entities/entities"><span translate lib="web">entities</span></a>
         </li>
+        <li class="nav-item" ng-class="{active: menuctrl.PathIs('/Cats')}" ng-show="menuctrl.hasrole('users')">
+          <a class="nav-link" href="#/Cats"><span translate lib="web">Cats</span></a>
+        </li>
+        <li class="nav-item" ng-class="{active: menuctrl.PathIs('/nodered')}" ng-show="menuctrl.hasrole('users')">
+          <a class="nav-link" href="#/nodered"><span translate lib="web">nodered</span></a>
+        </li>
         <li class="nav-item dropdown" ng-show="menuctrl.hasrole('users') || menuctrl.hasrole('admins')">
           <a class="nav-link dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false"
             translate lib="web">admin</a>

@@ -1,6 +1,6 @@
 import { WebSocketClientService } from "./WebSocketClientService";
 import angular = require("angular");
-import { MenuCtrl, MainCtrl, LoginCtrl, EntityCtrl, EntitiesCtrl, HistoryCtrl } from "./Controllers";
+import { MenuCtrl, MainCtrl, LoginCtrl, EntityCtrl, EntitiesCtrl, HistoryCtrl, CatsCtrl, CatCtrl, noderedCtrl } from "./Controllers";
 import { userdata, api, timesince, translate, textarea, fileread } from "./CommonControllers";
 
 /**
@@ -46,6 +46,12 @@ module openflow {
                 .when('/Entity/:collection', { templateUrl: 'Entity.html', controller: EntityCtrl, controllerAs: 'ctrl' })
                 .when('/Entity/:collection/:id', { templateUrl: 'Entity.html', controller: EntityCtrl, controllerAs: 'ctrl' })
                 .when('/History/:collection/:id', { templateUrl: 'History.html', controller: HistoryCtrl, controllerAs: 'ctrl' })
+
+                .when('/Cats', { templateUrl: 'Cats.html', controller: CatsCtrl, controllerAs: 'ctrl' })
+                .when('/Cat', { templateUrl: 'Cat.html', controller: CatCtrl, controllerAs: 'ctrl' })
+                .when('/Cat/:id', { templateUrl: 'Cat.html', controller: CatCtrl, controllerAs: 'ctrl' })
+
+                .when('/nodered', { templateUrl: 'nodered.html', controller: noderedCtrl, controllerAs: 'ctrl' })
 
                 .otherwise({ redirectTo: '/main' });
         }

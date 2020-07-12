@@ -1,5 +1,16 @@
 import { Base } from "openflow-api";
 
+
+
+export class Cat extends Base {
+    constructor() {
+        super();
+        this._type = "cat";
+        this.gender = "male";
+    }
+    public gender: string;
+}
+
 export class Provider extends Base {
     constructor(name: string, public id: string, public provider: string, public issuer: string, public saml_federation_metadata: string) {
         super();

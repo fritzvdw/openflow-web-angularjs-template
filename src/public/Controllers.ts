@@ -1,6 +1,7 @@
 import { WebSocketClientService } from "./WebSocketClientService";
 import { entitiesCtrl, api, userdata, entityCtrl } from "./CommonControllers";
-import { NoderedUtil, Ace, Base, TokenUser } from "openflow-api";
+import { NoderedUtil, Ace, Base, TokenUser, WebSocketClient, QueueMessage } from "openflow-api";
+import { Cat } from "./Entities";
 function treatAsUTC(date): number {
     var result = new Date(date);
     result.setMinutes(result.getMinutes() - result.getTimezoneOffset());
@@ -602,4 +603,136 @@ export class HistoryCtrl extends entitiesCtrl<Base> {
             this.loadData();
         }
     }
+}
+
+
+
+export class CatsCtrl extends entitiesCtrl<Cat> {
+    public collections: any;
+    constructor(
+        public $scope: ng.IScope,
+        public $location: ng.ILocationService,
+        public $routeParams: ng.route.IRouteParamsService,
+        public $interval: ng.IIntervalService,
+        public WebSocketClientService: WebSocketClientService,
+        public api: api,
+        public userdata: userdata
+    ) {
+        super($scope, $location, $routeParams, $interval, WebSocketClientService, api, userdata);
+        console.debug("CatsCtrl");
+        this.autorefresh = true;
+        this.basequery = { _type: 'cat' };
+        this.collection = "entities";
+        this.baseprojection = { _type: 1, type: 1, name: 1, gender: 1, _created: 1, _createdby: 1, _modified: 1 };
+        WebSocketClientService.onSignedin(async (user: TokenUser) => {
+            this.loadData();
+        });
+    }
+}
+export class CatCtrl extends entityCtrl<Cat> {
+    searchFilteredList: TokenUser[] = [];
+    searchSelectedItem: TokenUser = null;
+    searchtext: string = "";
+    e: any = null;
+
+    public newkey: string = "";
+    public showjson: boolean = false;
+    public jsonmodel: string = "";
+    public message: string = "";
+    constructor(
+        public $scope: ng.IScope,
+        public $location: ng.ILocationService,
+        public $routeParams: ng.route.IRouteParamsService,
+        public $interval: ng.IIntervalService,
+        public WebSocketClientService: WebSocketClientService,
+        public api: api
+    ) {
+        super($scope, $location, $routeParams, $interval, WebSocketClientService, api);
+        console.debug("EntityCtrl");
+        this.collection = "entities";
+        WebSocketClientService.onSignedin(async (user: TokenUser) => {
+            // this.usergroups = await this.api.Query("users", {});
+            if (this.id !== null && this.id !== undefined) {
+                await this.loadData();
+            } else {
+                this.model = new Cat();
+                this.model._type = "cat";
+                this.model.name = "Cat name";
+                this.model.gender = "female";
+                this.model._encrypt = [];
+                this.model._acl = [];
+                this.keys = Object.keys(this.model);
+                for (var i: number = this.keys.length - 1; i >= 0; i--) {
+                    if (this.keys[i].startsWith('_')) this.keys.splice(i, 1);
+                }
+                if (!this.$scope.$$phase) { this.$scope.$apply(); }
+            }
+        });
+    }
+
+    async submit(): Promise<void> {
+        try {
+            if (this.model._id) {
+                await NoderedUtil.UpdateOne(this.collection, null, this.model, 1, false, null);
+                // await this.api.Update(this.collection, this.model);
+            } else {
+                await NoderedUtil.InsertOne(this.collection, this.model, 1, false, null);
+                // await this.api.Insert(this.collection, this.model);
+            }
+        } catch (error) {
+            this.errormessage = error;
+        }
+
+        this.$location.path("/Cats");
+        if (!this.$scope.$$phase) { this.$scope.$apply(); }
+    }
+
+}
+
+export class noderedCtrl {
+    public static $inject = [
+        "$scope",
+        "$location",
+        "$routeParams",
+        "WebSocketClientService",
+        "api"
+    ];
+    public queuename: string;
+    public payload: string;
+    public result: any;
+    public array: any[];
+    constructor(
+        public $scope: ng.IScope,
+        public $location: ng.ILocationService,
+        public $routeParams: ng.route.IRouteParamsService,
+        public WebSocketClientService: WebSocketClientService,
+        public api: api
+    ) {
+        console.debug("SocketCtrl");
+        WebSocketClientService.onSignedin(async (user: TokenUser) => {
+            this.queuename = await NoderedUtil.RegisterQueue(WebSocketClient.instance, "", (data: QueueMessage, ack: any) => {
+                ack();
+                // this.result = data.data;
+                const payload = data.data.payload;
+                this.result = payload.text;
+
+                this.array = payload.array;
+
+                if (!this.$scope.$$phase) { this.$scope.$apply(); }
+            });
+        });
+    }
+
+    async SendMessageToNodered() {
+        try {
+            const data: any = { payload: { "text": this.payload } };
+            await NoderedUtil.QueueMessage(WebSocketClient.instance, "fritzvsynergerpcomwebpage", this.queuename, data, null, 5000);
+
+        } catch (error) {
+            console.error(error);
+            this.result = error;
+        }
+        if (!this.$scope.$$phase) { this.$scope.$apply(); }
+    }
+
 }

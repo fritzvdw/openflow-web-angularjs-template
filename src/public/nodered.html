@@ -1,0 +1,19 @@
+<input type="text" ng-model="ctrl.payload" />
+<button ng-click="ctrl.SendMessageToNodered(ctrl.payload)" type="button" class="btn btn-success ">Send</button>
+
+{{  ctrl.result }}
+
+<table>
+    <tr>
+        <td>id</td>
+        <td>name</td>
+    </tr>
+    <tr ng-repeat="model in ctrl.array">
+        <td>
+            {{ model.id}}
+        </td>
+        <td>
+            {{ model.name}}
+        </td>
+    </tr>
+</table>
